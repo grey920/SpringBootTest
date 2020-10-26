@@ -1,11 +1,15 @@
 package com.test.study.user;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import org.junit.jupiter.api.BeforeAll;
+import java.time.LocalDate;
+import java.util.HashMap;
+
+import org.aspectj.lang.annotation.Before;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -35,6 +39,18 @@ public class UserController테스트 {
 
 	@Autowired
 	private ObjectMapper objectMapper;
+	
+	@Before(value = "사전 셋팅")
+	public void user_데이터_세팅() throws Exception {
+//		// UserCreateDto 객체 생성
+		UserCreateDto userDto = UserCreateDto.builder().name("정다와").email("charminggw@google.com").password("000000").birthDay(LocalDate.of(1992, 1, 18))
+				.build();
+		userDto.update();
+		
+		this.mockMvc.perform(post("/api/users/").contentType(MediaTypes.HAL_JSON_VALUE)// 안넣어도 동작함
+				.content(objectMapper.writeValueAsString(userDto)) // String으로 변환해서 body에 넣겠다
+		).andDo(print()).andExpect(status().isCreated()); // 컨트롤러가 반환하는 값 확인
+	}
 
 	@BeforeEach
 	public void setup() {
@@ -46,8 +62,9 @@ public class UserController테스트 {
 	@Test
 	@DisplayName("회원가입 - 성공")
 	public void user_생성_성공_테스트() throws Exception {
-		UserCreateDto user = UserCreateDto.builder().name("jung").userId("hambak").password("111111").gender("w").age(32)
+		UserCreateDto user = UserCreateDto.builder().name("정중기").email("joonggi@google.com").password("111111").birthDay(LocalDate.of(1992, 1, 18))
 				.build();
+		user.update();
 
 		this.mockMvc.perform(post("/api/users/").contentType(MediaTypes.HAL_JSON_VALUE)// 안넣어도 동작함
 				.content(objectMapper.writeValueAsString(user)) // String으로 변환해서 body에 넣겠다
@@ -56,14 +73,13 @@ public class UserController테스트 {
 
 	@DisplayName("회원가입 - 실패 : id에 null값 입력")
 	@ParameterizedTest
-	@NullAndEmptySource
+	@NullAndEmptySource // null or "" 입력
 	public void user_생성_실패_테스트(String input) throws Exception {
 		UserCreateDto user = UserCreateDto.builder()
-				.userId(input)
+				.email(input)
 				.name("정겨운")
 				.password("1111111")
-				.gender("w")
-				.age(15)
+				.birthDay(LocalDate.of(1992, 1, 18))
 				.build();
 
 		this.mockMvc.perform(post("/api/users/").contentType(MediaTypes.HAL_JSON_VALUE)// 안넣어도 동작함
@@ -77,7 +93,7 @@ public class UserController테스트 {
 	@DisplayName("회원가입 - 실패 : 14세 미만 가입불가")
 	@Test
 	public void user_14세미만_가입불가_테스트() throws Exception {
-		UserCreateDto user = UserCreateDto.builder().age(2).build();
+		UserCreateDto user = UserCreateDto.builder().birthDay(LocalDate.of(2020, 1, 18)).build();
 
 		this.mockMvc
 				.perform(post("/api/users/").contentType(MediaTypes.HAL_JSON_VALUE)
@@ -91,10 +107,9 @@ public class UserController테스트 {
 	public void 회원가입_비밀번호_유효성검사_테스트(String input) throws Exception{
 		UserCreateDto user = UserCreateDto.builder()
 				.name("정겨운")
-				.userId("kyewoon")
+				.email("kyewoon")
 				.password(input)
-				.gender("w")
-				.age(32)
+				.birthDay(LocalDate.of(1992, 1, 18))
 				.build();
 		this.mockMvc
 				.perform(
@@ -106,14 +121,40 @@ public class UserController테스트 {
 				.andExpect(status().isBadRequest());
 
 	}
+	
+	@Test
+	@DisplayName("로그인 - 성공")  
+	public void 로그인_성공_테스트() throws Exception {
+		User user = User.builder().email("dawa@google.com").password("111111").build();
 
-//	@Test
-//	@DisplayName("로그인 - 성공")  
-//	public void 로그인_성공_테스트() throws Exception {
-//		this.mockMvc.perform(
-//				get("/api/users/login")
-//				.contentType(MediaTypes.HAL_JSON_VALUE)
-//				.content(this.objectMapper.writeValueAsString(value))
-//				);
-//	}
+		this.mockMvc.perform(get("/api/users/login")
+				.contentType(MediaTypes.HAL_JSON_VALUE)
+				.content(objectMapper.writeValueAsString(user))
+				)
+				.andDo(print())
+				.andExpect(status().isOk());
+	}
+	
+	@Test
+	@DisplayName("로그인 - 실패")  
+	public void 로그인_실패_테스트() throws Exception {
+		  mockMvc.perform(get("/api/users/login")
+	                .param("email","11111111111")
+	                .param("password","0000000000")
+	                )
+		  			.andDo(print())
+	                .andExpect(status().isBadRequest())
+	               ;
+	}
+
+	@Test
+	@DisplayName("특정회원 삭제 - 성공")
+	public void 회원삭제_성공_테스트() throws Exception {
+//		UserCreateDto user1 = UserCreateDto.builder().name("dawa").email("dawa@google.com").password("111111").birthDay(LocalDate.of(1983, 6, 2))
+//				.build();
+		User user = User.builder().id((long) 3).build();
+		this.mockMvc.perform(delete("/api/users/").contentType(MediaTypes.HAL_JSON_VALUE)
+				.content(objectMapper.writeValueAsString(user))
+		).andDo(print()).andExpect(status().isCreated());
+	}
 }

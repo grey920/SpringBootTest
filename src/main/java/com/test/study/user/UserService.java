@@ -29,13 +29,13 @@ public class UserService {
 	
 	
 	// 아이디로 회원조회
-	public User findByUserId(String userId) {
-		return this.repository.findByUserId(userId);
+	public User findByEmail(String email) {
+		return this.repository.findByEmail(email);
 	}
 	
 	// 로그인 작업
-	public User isId(User userMap) {
-		User user = this.findByUserId(userMap.getUserId());
+	public User isEmail(User userMap) {
+		User user = this.findByEmail(userMap.getEmail());
 		if(user != null) {// 해당 아이디가 있는 경우
 			if(user.getPassword().equals(userMap.getPassword()))//db에 있는 비번과 비교
 				return user; // 일치하면 user 리턴
@@ -51,6 +51,7 @@ public class UserService {
 //	public User findByIdAndPassword(String userId,String password) {
 //		return this.repository.findByUserIdAndPassword(userId, password);
 //	}
+
 
 	/** 회원 삭제
 	 * @param user

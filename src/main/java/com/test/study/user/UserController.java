@@ -56,9 +56,9 @@ public class UserController {
 	}
 	
 	// 회원 아이디 조회
-	@GetMapping("{userId}")
-	public ResponseEntity<User> findByUserId(@PathVariable("userId") String userId){
-		User user = this.service.findByUserId(userId);
+	@GetMapping("{email}")
+	public ResponseEntity<User> findByEmail(@PathVariable("email") String email){
+		User user = this.service.findByEmail(email);
 		return new ResponseEntity<User>(user, HttpStatus.OK);
 	}
 	
@@ -68,7 +68,7 @@ public class UserController {
 		if(errors.hasErrors()) {
 			return ResponseEntity.badRequest().body(errors);
 		}
-		User checkUser = this.service.isId(modelmapper.map(userDto, User.class));
+		User checkUser = this.service.isEmail(modelmapper.map(userDto, User.class));
 		return new ResponseEntity<Object>(checkUser,HttpStatus.OK);
 	}
 	
