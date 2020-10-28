@@ -59,4 +59,9 @@ public class UserService {
 	public void delete(User user) {
 		this.repository.delete(user);
 	}
+	
+	// 회원 전체 삭제
+		public void deleteList() {
+			this.repository.deleteAll();
+		}
 }

@@ -24,13 +24,13 @@ import lombok.ToString;
 @AllArgsConstructor
 @ToString
 @Builder
-@Table(name="new_twitty_user", uniqueConstraints = {@UniqueConstraint(name="email_UNIQUE",columnNames = {"email"})})
+@Table(name="new_twitty_user")
 @Entity(name = "new_twitty_user")
 public class User {
 
 	@Id @GeneratedValue
 	private Long id;
-	@Column(nullable = false, unique = true)
+	@Column(nullable = false)
 	private String email;
 	private String name;
 	private String password;
@@ -39,11 +39,11 @@ public class User {
 	private LocalDate birthDay;// Java8부터 가능. 날짜 정보만 필요할 때 사용
 
 	public void update() {
-		LocalDate now = LocalDate.now();
-		this.age = now.minusYears(birthDay.getYear()).getYear();
-		if(birthDay.plusYears(age).isAfter(now)) {
-			this.age = age-1;
-		}
+//		LocalDate now = LocalDate.now();
+//		this.age = now.minusYears(birthDay.getYear()).getYear();
+//		if(birthDay.plusYears(age).isAfter(now)) {
+//			this.age = age-1;
+//		}
 		if(age > 20)
 			this.isAdult = true;
 		else

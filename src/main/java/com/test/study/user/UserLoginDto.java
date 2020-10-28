@@ -20,6 +20,6 @@ public class UserLoginDto {
 	private String email;
 	
 	@NotEmpty(message = "비밀번호는 필수로 넣어야 합니다")
-	@Pattern(regexp = "^[0-9]{6}$", message="0부터 9까지, 6자리 입력해야 합니다")
+	@Pattern(regexp = "^(?=.*\\d)(?=.*[~`!@#$%\\\\^&*()-])(?=.*[a-z])(?=.*[A-Z]).{8,}$", message="영문(대소문자),숫자,특수문자 조합으로 8자리 이상 입력해야 합니다")
 	private String password;	
 }

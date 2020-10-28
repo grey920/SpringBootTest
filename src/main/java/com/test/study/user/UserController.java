@@ -42,7 +42,13 @@ public class UserController {
 			return ResponseEntity.badRequest().body(errors); // 에러를 직접 바디에 담아서 리턴 
 													// -> 에러발생! => errors를 Serialize해서 ResponseEntity에 담아야 한다
 		}
-		User newUser = this.service.save(modelmapper.map(userDto, User.class));
+		userDto.update();
+		User newUser = modelmapper.map(userDto, User.class);
+		newUser.update();
+		if(newUser.isAdult()==false)
+			return ResponseEntity.badRequest().body(errors);
+		newUser = this.service.save(newUser);
+		
 		URI uri = linkTo(UserController.class).slash(newUser.getId()).toUri();
 		return ResponseEntity.created(uri).body(newUser);
 	}
@@ -63,19 +69,21 @@ public class UserController {
 	}
 	
 	// 로그인 
-	@GetMapping("/login")
+	@PostMapping("/login")
 	public ResponseEntity<Object> login(@RequestBody @Valid UserLoginDto userDto, Errors errors){
 		if(errors.hasErrors()) {
 			return ResponseEntity.badRequest().body(errors);
 		}
-		User checkUser = this.service.isEmail(modelmapper.map(userDto, User.class));
-		return new ResponseEntity<Object>(checkUser,HttpStatus.OK);
+		User user = modelmapper.map(userDto, User.class);
+		User checkedUser = this.service.isEmail(user);
+		return new ResponseEntity<Object>(checkedUser,HttpStatus.OK);
 	}
 	
 	// 회원 수정
 	@PutMapping
 	public ResponseEntity<User> update(@RequestBody User user){
 		User newUser = this.service.save(user);
+		System.out.println(user.toString());
 		return new ResponseEntity<User>(newUser, HttpStatus.CREATED);
 	}
 	
@@ -84,6 +92,12 @@ public class UserController {
 	public ResponseEntity<User> delete(@RequestBody User user){
 		this.service.delete(user);
 		return new ResponseEntity<User>(HttpStatus.CREATED);
+	}
+	
+	// 회원 전체 삭제
+	@DeleteMapping("/All")
+	public void deleteAll(){
+		this.service.deleteList();
 	}
 	
 	

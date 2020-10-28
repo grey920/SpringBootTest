@@ -3,13 +3,16 @@ package com.test.study.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.time.LocalDate;
 import java.util.HashMap;
 
-import org.aspectj.lang.annotation.Before;
+import org.apache.tomcat.util.file.Matcher;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -40,29 +43,35 @@ public class UserController테스트 {
 	@Autowired
 	private ObjectMapper objectMapper;
 	
-	@Before(value = "사전 셋팅")
-	public void user_데이터_세팅() throws Exception {
-//		// UserCreateDto 객체 생성
-		UserCreateDto userDto = UserCreateDto.builder().name("정다와").email("charminggw@google.com").password("000000").birthDay(LocalDate.of(1992, 1, 18))
+
+	@BeforeEach
+	public void init() throws  Exception {
+		this.mockMvc = MockMvcBuilders.webAppContextSetup(ctx).addFilters(new CharacterEncodingFilter("UTF-8", true)) // 필터
+																														// 추가
+				.alwaysDo(print()).build();
+		
+		UserCreateDto userDto = UserCreateDto
+				.builder()
+				.name("정겨운")
+				.email("aaa@aaa.com")
+				.password("1!2@3#AaSsZz")
+				.birthDay(LocalDate.of(1992, 1, 18))
 				.build();
 		userDto.update();
-		
 		this.mockMvc.perform(post("/api/users/").contentType(MediaTypes.HAL_JSON_VALUE)// 안넣어도 동작함
 				.content(objectMapper.writeValueAsString(userDto)) // String으로 변환해서 body에 넣겠다
 		).andDo(print()).andExpect(status().isCreated()); // 컨트롤러가 반환하는 값 확인
 	}
-
-	@BeforeEach
-	public void setup() {
-		this.mockMvc = MockMvcBuilders.webAppContextSetup(ctx).addFilters(new CharacterEncodingFilter("UTF-8", true)) // 필터
-																														// 추가
-				.alwaysDo(print()).build();
+	
+	@AfterEach
+	public void deactivate() throws Exception {
+			this.mockMvc.perform(delete("/api/users/all")).andDo(print()).andExpect(status().isCreated());
 	}
 
 	@Test
 	@DisplayName("회원가입 - 성공")
 	public void user_생성_성공_테스트() throws Exception {
-		UserCreateDto user = UserCreateDto.builder().name("정중기").email("joonggi@google.com").password("111111").birthDay(LocalDate.of(1992, 1, 18))
+		UserCreateDto user = UserCreateDto.builder().name("정다와").email("dawa@google.com").password("^Na13$sgd").birthDay(LocalDate.of(1992, 1, 18))
 				.build();
 		user.update();
 
@@ -85,7 +94,6 @@ public class UserController테스트 {
 		this.mockMvc.perform(post("/api/users/").contentType(MediaTypes.HAL_JSON_VALUE)// 안넣어도 동작함
 				.content(objectMapper.writeValueAsString(user)) // String으로 변환해서 body에 넣겠다
 		).andDo(print())
-				// assertThat(user.getName()).isBlank();
 				.andExpect(status().isBadRequest()); // 컨트롤러가 반환하는 값 확인
 	}
 
@@ -117,44 +125,80 @@ public class UserController테스트 {
 						.contentType(MediaTypes.HAL_JSON_VALUE)
 						.content(this.objectMapper.writeValueAsString(user)))
 				.andDo(print())
-				// .andExpect(status().isCreated());
 				.andExpect(status().isBadRequest());
 
 	}
 	
-	@Test
-	@DisplayName("로그인 - 성공")  
-	public void 로그인_성공_테스트() throws Exception {
-		User user = User.builder().email("dawa@google.com").password("111111").build();
-
-		this.mockMvc.perform(get("/api/users/login")
-				.contentType(MediaTypes.HAL_JSON_VALUE)
-				.content(objectMapper.writeValueAsString(user))
-				)
-				.andDo(print())
-				.andExpect(status().isOk());
-	}
+//	@Test
+//	@DisplayName("로그인 - 성공")  
+//	public void 로그인_성공_테스트() throws Exception {
+//
+//		//		mockMvc.perform(
+////				get("/api/users/login")
+////				.contentType(MediaTypes.HAL_JSON_VALUE)
+////				.content(this.objectMapper.writeValueAsString(user)))
+////		.andDo(print())
+////		.andExpect(status().isOk());
+////		HashMap<String, String> user = new HashMap<String,String>();
+////		user.put("email", "aaa@aaa.com");
+////		user.put("password", "1!2@3#AaSsZz");
+//		
+//		UserLoginDto user = new UserLoginDto();
+//		user.setEmail("aaa@aaa.com");
+//		user.setPassword("1!2@3#AaSsZz");
+//		
+//		this.mockMvc.perform(
+//				post("/api/users/login/")
+//				.contentType(MediaTypes.HAL_JSON_VALUE)
+//				.content(objectMapper.writeValueAsString(user))
+//		).andDo(print())
+//		.andExpect(status().isOk())
+//		.andExpect(jsonPath("name").value("정겨운"))
+//		;
+//	}
 	
 	@Test
 	@DisplayName("로그인 - 실패")  
 	public void 로그인_실패_테스트() throws Exception {
-		  mockMvc.perform(get("/api/users/login")
-	                .param("email","11111111111")
-	                .param("password","0000000000")
-	                )
-		  			.andDo(print())
-	                .andExpect(status().isBadRequest())
-	               ;
+		
+		mockMvc.perform(
+				get("/api/users/login")
+				.param("email","ccc@asdf.com")
+				.param("password", "1!2@3#AaSsZz")
+		).andDo(print())
+		.andExpect(status().isBadRequest());
+
 	}
 
 	@Test
 	@DisplayName("특정회원 삭제 - 성공")
 	public void 회원삭제_성공_테스트() throws Exception {
-//		UserCreateDto user1 = UserCreateDto.builder().name("dawa").email("dawa@google.com").password("111111").birthDay(LocalDate.of(1983, 6, 2))
-//				.build();
-		User user = User.builder().id((long) 3).build();
-		this.mockMvc.perform(delete("/api/users/").contentType(MediaTypes.HAL_JSON_VALUE)
+		User user = User.builder().id((long) 2).build();
+		this.mockMvc.perform(
+				delete("/api/users/")
+				.contentType(MediaTypes.HAL_JSON_VALUE)
 				.content(objectMapper.writeValueAsString(user))
 		).andDo(print()).andExpect(status().isCreated());
 	}
+	
+	@Test
+	@DisplayName("회원 수정 - 성공")
+	public void 회원수정_성공_테스트() throws Exception {
+		User user = new User();
+		user.setId((long) 1);
+		user.setEmail("aaa@aaa.com");
+		user.setPassword("1!2@3#AaSsZz");
+		user.setName("정함박");
+		user.setBirthDay(LocalDate.of(1983, 6, 2));
+
+		mockMvc.perform(
+				put("/api/users/")
+				.contentType(MediaTypes.HAL_JSON_VALUE)
+				.content(this.objectMapper.writeValueAsString(user))
+		).andDo(print())
+		.andExpect(status().isCreated());
+	}
+	
+	
+	
 }
