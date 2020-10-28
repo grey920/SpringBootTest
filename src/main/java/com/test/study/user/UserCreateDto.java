@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
 import lombok.AllArgsConstructor;
@@ -31,7 +32,7 @@ public class UserCreateDto { //Entity클래스가 DTO클래스를 따로 생성�
 	@Pattern(regexp = "^(?=.*\\d)(?=.*[~`!@#$%\\\\^&*()-])(?=.*[a-z])(?=.*[A-Z]).{8,}$", message="영문(대소문자),숫자,특수문자 조합으로 8자리 이상 입력해야 합니다")
 	private String password;
 	
-	@NotEmpty
+	@NotNull
 	private LocalDate birthDay;
 	
 	@Min(14)

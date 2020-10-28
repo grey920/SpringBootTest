@@ -2,6 +2,7 @@ package com.test.study.user;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
 import lombok.AllArgsConstructor;
@@ -16,7 +17,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @Builder
 public class UserLoginDto { 
-	@NotEmpty(message = "email은 필수로 넣어야 합니다")
+	@NotNull(message = "email은 필수로 넣어야 합니다")
 	private String email;
 	
 	@NotEmpty(message = "비밀번호는 필수로 넣어야 합니다")
